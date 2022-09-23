@@ -15,7 +15,6 @@ public class Player : MonoBehaviour
   private static string backwardButton;
   private static string rightButton;
   private static string leftButton;
-  private static float overTopSpeedPenalty;
 
   Animator animator;
 
@@ -34,7 +33,6 @@ public class Player : MonoBehaviour
     rightButton = "d";
     leftButton = "a";
     rotationSpeed = 100f;
-    overTopSpeedPenalty = 0.99f;
   }
 
   // Update is called once per frame
@@ -43,18 +41,16 @@ public class Player : MonoBehaviour
     Rigidbody prb = player.GetComponent<Rigidbody>();
     if(Input.GetKey(forwardButton))
     {
-      prb.AddRelativeForce(0f, 0f, forwardAcceleration, ForceMode.Acceleration);
-      if(prb.velocity.magnitude > topForwardSpeed)
+      if(prb.velocity.magnitude < topForwardSpeed)
       {
-        prb.velocity *= overTopSpeedPenalty;
+        prb.AddRelativeForce(0f, 0f, forwardAcceleration, ForceMode.Acceleration);
       }
     }
     if(Input.GetKey(backwardButton))
     {
-      prb.AddRelativeForce(0f, 0f, -backwardAcceleration, ForceMode.Acceleration);
-      if(prb.velocity.magnitude > topBackwardSpeed)
+      if(prb.velocity.magnitude < topBackwardSpeed)
       {
-        prb.velocity *= overTopSpeedPenalty;
+        prb.AddRelativeForce(0f, 0f, -backwardAcceleration, ForceMode.Acceleration);
       }
     }
     if (Input.GetKey(rightButton))

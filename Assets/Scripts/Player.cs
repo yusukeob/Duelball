@@ -5,16 +5,12 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
   private static GameObject player;
-  private static float topForwardSpeed;
-  private static float topBackwardSpeed;
-  private static float forwardAcceleration;
-  private static float backwardAcceleration;
-  private static float velocity;
-  private static float rotationSpeed;
-  private static string forwardButton;
-  private static string backwardButton;
-  private static string rightButton;
-  private static string leftButton;
+  private static float topForwardSpeed = 100f;
+  private static float topBackwardSpeed = 50f;
+  private static float forwardAcceleration = 5f;
+  private static float backwardAcceleration = 2f;
+  private static float rotationSpeed = 100f;
+  private static bool hasBall = false;
 
   Animator animator;
 
@@ -22,46 +18,53 @@ public class Player : MonoBehaviour
   void Start()
   {
     animator = GetComponent<Animator>();
-
     player = GameObject.Find("Player");
-    topForwardSpeed = 100f;
-    topBackwardSpeed = 50f;
-    forwardAcceleration = 5f;
-    backwardAcceleration = 2f;
-    forwardButton = "w";
-    backwardButton = "s";
-    rightButton = "d";
-    leftButton = "a";
-    rotationSpeed = 100f;
   }
 
   // Update is called once per frame
   void Update()
   {
+    // movement
     Rigidbody prb = player.GetComponent<Rigidbody>();
-    if(Input.GetKey(forwardButton))
+    if(Input.GetKey(GameManager.forwardButton))
     {
       if(prb.velocity.magnitude < topForwardSpeed)
       {
         prb.AddRelativeForce(0f, 0f, forwardAcceleration, ForceMode.Acceleration);
       }
     }
-    if(Input.GetKey(backwardButton))
+    if(Input.GetKey(GameManager.backwardButton))
     {
       if(prb.velocity.magnitude < topBackwardSpeed)
       {
         prb.AddRelativeForce(0f, 0f, -backwardAcceleration, ForceMode.Acceleration);
       }
     }
-    if (Input.GetKey(rightButton))
+    if (Input.GetKey(GameManager.rightButton))
     {
       transform.Rotate(Vector3.up * rotationSpeed * Time.deltaTime);
     }
-    if (Input.GetKey(leftButton))
+    if (Input.GetKey(GameManager.leftButton))
     {
       transform.Rotate(-Vector3.up * rotationSpeed * Time.deltaTime);
     }
 
     animator.SetFloat("playerSpeed", prb.velocity.magnitude);
+
+    // ball interaction
+    if (Input.GetKeyDown(GameManager.engageBallButton) && (hasBall || GameManager.ballPlayerPickupDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+    {
+      hasBall = !hasBall;
+    }
+    if (hasBall)
+    {
+      Vector3 ballPlacement = (player.transform.forward * GameManager.ballPlacementDistance) + player.transform.position;
+      GameManager.ball.transform.position = new Vector3(ballPlacement.x, ballPlacement.y + 10f, ballPlacement.z);
+      GameManager.ball.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition;
+    }
+    else
+    {
+      GameManager.ball.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+    }
   }
 }

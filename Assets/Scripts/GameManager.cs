@@ -19,6 +19,13 @@ public class GameManager : MonoBehaviour
 
   public static float ballPlayerKickableDistance = 12f;
   public static float playerIsKickingGameSpeedModifier = 0.2f;
+  public static float kickArrowMaxScale = 3f;
+  public static float kickArrowMinScale = 1f;
+  public static float kickArrowScaleChangePerSecond = 1f;
+  public static float kickArrowMaxVerticalAngle = 60f;
+  public static float kickArrowMinVerticalAngle = 0f;
+  public static float kickArrowMaxHorizontalAngle = 45f;
+  public static float kickArrowAngleChangePerSecond = 20f;
 
   public static float ballPlayerPickupDistance = 12f;
   public static float ballPlacementDistance = 3f;

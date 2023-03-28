@@ -17,6 +17,9 @@ public class GameManager : MonoBehaviour
   public static KeyCode engageBallButton = KeyCode.A;
   public static KeyCode kickBallButton = KeyCode.D;
 
+  public static float ballPlayerKickableDistance = 12f;
+  public static float playerIsKickingGameSpeedModifier = 0.2f;
+
   public static float ballPlayerPickupDistance = 12f;
   public static float ballPlacementDistance = 3f;
 
@@ -34,6 +37,6 @@ public class GameManager : MonoBehaviour
       mainCamera.transform.position = player.transform.position - player.transform.forward * cameraDistance;
       mainCamera.transform.LookAt (player.transform.position);
       mainCamera.transform.rotation = Quaternion.Euler(30f, mainCamera.transform.eulerAngles.y, mainCamera.transform.eulerAngles.z);
-      mainCamera.transform.position = new Vector3 (mainCamera.transform.position.x, mainCamera.transform.position.y + 22f, mainCamera.transform.position.z);
+      mainCamera.transform.position = new Vector3 (mainCamera.transform.position.x, mainCamera.transform.position.y + 22f, mainCamera.transform.position.z - 5f);
   }
 }

@@ -6,6 +6,7 @@ public class Player : MonoBehaviour
 {
   private static GameObject player;
   private static GameObject kickArrow;
+  private static Quaternion initKickArrowRotation;
   private static bool increaseKickArrowScale = true;
   private static float topForwardSpeed = 100f;
   private static float topBackwardSpeed = 50f;
@@ -22,6 +23,7 @@ public class Player : MonoBehaviour
     animator = GetComponent<Animator>();
     player = GameObject.Find("Player");
     kickArrow = GameObject.Find("Player/Kick Arrow Container");
+    initKickArrowRotation = kickArrow.transform.localRotation;
     kickArrow.SetActive(false);
   }
 
@@ -82,7 +84,7 @@ public class Player : MonoBehaviour
     // ball kick action
     if (Input.GetKeyDown(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
       kickArrow.transform.localScale = new Vector3(1f, 1f, 1f);
-      kickArrow.transform.localRotation = Quaternion.identity;
+      kickArrow.transform.localRotation = initKickArrowRotation;
       kickArrow.SetActive(true);
     }
     
@@ -106,52 +108,69 @@ public class Player : MonoBehaviour
       kickArrow.transform.localScale = new Vector3(newKickArrowScale, newKickArrowScale, newKickArrowScale);
 
       // arrow direction control
-      if (Input.GetKey(GameManager.forwardButton) && (kickArrow.transform.eulerAngles.x == 0 || 360 - kickArrow.transform.eulerAngles.x < GameManager.kickArrowMaxVerticalAngle))
+      float verticalIncrease = 0f;
+      float verticalDecrease = 0f;
+      float horizontalIncrease = 0f;
+      float horizontalDecrease = 0f;
+      if (Input.GetKey(GameManager.forwardButton))
       {
-        Quaternion q = kickArrow.transform.rotation;
-        float x = q.eulerAngles.x - GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
-        if(x >= 0 && x < 300) {
-          x = 300;
-        }
-        q.eulerAngles = new Vector3(x, q.eulerAngles.y, q.eulerAngles.z);
-        kickArrow.transform.rotation = q;
+        verticalIncrease = -GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
       }
-      if (Input.GetKey(GameManager.backwardButton) && kickArrow.transform.eulerAngles.x > 300 - GameManager.kickArrowMaxVerticalAngle)
+      if (Input.GetKey(GameManager.backwardButton))
       {
-        Quaternion q = kickArrow.transform.rotation;
-        float x = q.eulerAngles.x + GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
-        if(x < 300 || x > 360) {
-          x = 0;
-        }
-        q.eulerAngles = new Vector3(x, q.eulerAngles.y, q.eulerAngles.z);
-        kickArrow.transform.rotation = q;
+        verticalDecrease = -GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
       }
-      if (Input.GetKey(GameManager.rightButton) && (90 - kickArrow.transform.eulerAngles.y >= GameManager.kickArrowMaxHorizontalAngle || kickArrow.transform.eulerAngles.y <= 90 + GameManager.kickArrowMaxHorizontalAngle))
+      if (Input.GetKey(GameManager.rightButton))
       {
-        Quaternion q = kickArrow.transform.rotation;
-        float y = q.eulerAngles.y + GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
-        Debug.Log(y);
-        if(y > 90 + GameManager.kickArrowMaxHorizontalAngle) {
-          y = 90 + GameManager.kickArrowMaxHorizontalAngle;
-        }
-        q.eulerAngles = new Vector3(q.eulerAngles.x, y, q.eulerAngles.z);
-        kickArrow.transform.rotation = q;
+        horizontalIncrease = GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
       }
-      if (Input.GetKey(GameManager.leftButton) && (90 - kickArrow.transform.eulerAngles.y >= GameManager.kickArrowMaxHorizontalAngle || kickArrow.transform.eulerAngles.y <= 90 + GameManager.kickArrowMaxHorizontalAngle))
+      if (Input.GetKey(GameManager.leftButton))
       {
-        Quaternion q = kickArrow.transform.rotation;
-        float y = q.eulerAngles.y - GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
-        if(y < GameManager.kickArrowMaxHorizontalAngle) {
-          y = GameManager.kickArrowMaxHorizontalAngle;
-        }
-        q.eulerAngles = new Vector3(q.eulerAngles.x, y, q.eulerAngles.z);
-        kickArrow.transform.rotation = q;
+        horizontalDecrease = GameManager.kickArrowAngleChangePerSecond * Time.deltaTime;
       }
+
+      float verticalChange = verticalIncrease - verticalDecrease;
+      float horizontalChange = horizontalIncrease - horizontalDecrease;
+
+      Vector3 currKickArrowEulerAngles = kickArrow.transform.localEulerAngles;
+
+      float newKickArrowEulerAngleX = currKickArrowEulerAngles.x + verticalChange;
+      if (verticalChange < 0) {
+        if (newKickArrowEulerAngleX > GameManager.kickArrowMinVerticalAngle && Mathf.Abs(newKickArrowEulerAngleX) <= GameManager.kickArrowMaxVerticalAngle || Mathf.Abs(newKickArrowEulerAngleX) > GameManager.kickArrowMaxVerticalAngle && Mathf.Abs(newKickArrowEulerAngleX) < 360 - GameManager.kickArrowMaxVerticalAngle) {
+          newKickArrowEulerAngleX = -GameManager.kickArrowMaxVerticalAngle;
+        }
+      } else if (verticalChange > 0) {
+        if (newKickArrowEulerAngleX > GameManager.kickArrowMinVerticalAngle && newKickArrowEulerAngleX < GameManager.kickArrowMaxVerticalAngle) {
+          newKickArrowEulerAngleX = GameManager.kickArrowMinVerticalAngle;
+        }
+      }
+
+      float newKickArrowEulerAngleY = currKickArrowEulerAngles.y + horizontalChange;
+      // first condition value arbitrary, inserted to protect against arrow jump
+      if (Mathf.Abs(newKickArrowEulerAngleY) < 60 && newKickArrowEulerAngleY < 360 - GameManager.kickArrowMaxHorizontalAngle && newKickArrowEulerAngleY > GameManager.kickArrowMaxHorizontalAngle) {
+        newKickArrowEulerAngleY = GameManager.kickArrowMaxHorizontalAngle;
+      }
+      // first condition value arbitrary, inserted to protect against arrow jump
+      if (Mathf.Abs(newKickArrowEulerAngleY) > 300 && newKickArrowEulerAngleY < 360 - GameManager.kickArrowMaxHorizontalAngle && newKickArrowEulerAngleY > GameManager.kickArrowMaxHorizontalAngle) {
+        newKickArrowEulerAngleY = -GameManager.kickArrowMaxHorizontalAngle;
+      }
+
+      kickArrow.transform.localEulerAngles = new Vector3(newKickArrowEulerAngleX, newKickArrowEulerAngleY, currKickArrowEulerAngles.z);
     }
 
     if (Input.GetKeyUp(GameManager.kickBallButton) || (GameManager.ballPlayerKickableDistance < Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+      // ball kick resolution
+      if (Input.GetKeyUp(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+        Rigidbody brb = GameManager.ball.GetComponent<Rigidbody>();
+        float kickScale = kickArrow.transform.localScale.x;
+        Vector3 kickDirection = kickArrow.transform.forward;
+
+        hasBall = false;
+        brb.AddForce(kickDirection * GameManager.defaultBallKickForce * kickScale);
+      }
+
       kickArrow.SetActive(false);
-      increaseKickArrowScale = true;
+      increaseKickArrowScale = true; 
     }
   }
 }

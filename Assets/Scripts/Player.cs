@@ -33,17 +33,18 @@ public class Player : MonoBehaviour
     // movement
     Rigidbody prb = player.GetComponent<Rigidbody>();
 
-    if (!Input.GetKey(GameManager.kickBallButton) || (GameManager.ballPlayerKickableDistance < Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
-      if(Input.GetKey(GameManager.forwardButton))
+    if (!Input.GetKey(GameManager.kickBallButton) || (GameManager.ballPlayerKickableDistance < Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+    {
+      if (Input.GetKey(GameManager.forwardButton))
       {
-        if(prb.velocity.magnitude < topForwardSpeed)
+        if (prb.velocity.magnitude < topForwardSpeed)
         {
           prb.AddRelativeForce(0f, 0f, forwardAcceleration, ForceMode.Acceleration);
         }
       }
-      if(Input.GetKey(GameManager.backwardButton))
+      if (Input.GetKey(GameManager.backwardButton))
       {
-        if(prb.velocity.magnitude < topBackwardSpeed)
+        if (prb.velocity.magnitude < topBackwardSpeed)
         {
           prb.AddRelativeForce(0f, 0f, -backwardAcceleration, ForceMode.Acceleration);
         }
@@ -59,19 +60,12 @@ public class Player : MonoBehaviour
     }
 
     float playerSpeed = prb.velocity.magnitude;
-    if (Input.GetKey(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+    if (Input.GetKey(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+    {
       playerSpeed *= GameManager.playerIsKickingGameSpeedModifier;
     }
 
     animator.SetFloat("playerSpeed", playerSpeed);
-
-    // tackle action
-    bool tackle = false;
-    if (Input.GetKeyDown(GameManager.tackleButton)) {
-      tackle = true;
-    }
-
-    animator.SetBool("tackle", tackle);
 
     // ball interaction
     if (Input.GetKeyDown(GameManager.engageBallButton) && (hasBall || GameManager.ballPlayerPickupDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
@@ -89,26 +83,42 @@ public class Player : MonoBehaviour
       GameManager.ball.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
     }
 
+    // tackle action
+    bool tackle = false;
+    if (!hasBall && Input.GetKeyDown(GameManager.tackleButton))
+    {
+      tackle = true;
+    }
+
+    animator.SetBool("tackle", tackle);
+
     // ball kick action
-    if (Input.GetKeyDown(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+    if (Input.GetKeyDown(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+    {
       kickArrow.transform.localScale = new Vector3(1f, 1f, 1f);
       kickArrow.transform.localRotation = initKickArrowRotation;
       kickArrow.SetActive(true);
     }
-    
-    if (Input.GetKey(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+
+    if (Input.GetKey(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+    {
       // arrow scale control
       float currKickArrowScale = kickArrow.transform.localScale.x;
       float newKickArrowScale = 0f;
 
-      if (increaseKickArrowScale) {
+      if (increaseKickArrowScale)
+      {
         newKickArrowScale = currKickArrowScale + GameManager.kickArrowScaleChangePerSecond * Time.deltaTime;
-        if (newKickArrowScale >= GameManager.kickArrowMaxScale) {
+        if (newKickArrowScale >= GameManager.kickArrowMaxScale)
+        {
           increaseKickArrowScale = false;
         }
-      } else {
+      }
+      else
+      {
         newKickArrowScale = currKickArrowScale - GameManager.kickArrowScaleChangePerSecond * Time.deltaTime;
-        if (newKickArrowScale <= GameManager.kickArrowMinScale) {
+        if (newKickArrowScale <= GameManager.kickArrowMinScale)
+        {
           increaseKickArrowScale = true;
         }
       }
@@ -143,32 +153,41 @@ public class Player : MonoBehaviour
       Vector3 currKickArrowEulerAngles = kickArrow.transform.localEulerAngles;
 
       float newKickArrowEulerAngleX = currKickArrowEulerAngles.x + verticalChange;
-      if (verticalChange < 0) {
-        if (newKickArrowEulerAngleX > GameManager.kickArrowMinVerticalAngle && Mathf.Abs(newKickArrowEulerAngleX) <= GameManager.kickArrowMaxVerticalAngle || Mathf.Abs(newKickArrowEulerAngleX) > GameManager.kickArrowMaxVerticalAngle && Mathf.Abs(newKickArrowEulerAngleX) < 360 - GameManager.kickArrowMaxVerticalAngle) {
+      if (verticalChange < 0)
+      {
+        if (newKickArrowEulerAngleX > GameManager.kickArrowMinVerticalAngle && Mathf.Abs(newKickArrowEulerAngleX) <= GameManager.kickArrowMaxVerticalAngle || Mathf.Abs(newKickArrowEulerAngleX) > GameManager.kickArrowMaxVerticalAngle && Mathf.Abs(newKickArrowEulerAngleX) < 360 - GameManager.kickArrowMaxVerticalAngle)
+        {
           newKickArrowEulerAngleX = -GameManager.kickArrowMaxVerticalAngle;
         }
-      } else if (verticalChange > 0) {
-        if (newKickArrowEulerAngleX > GameManager.kickArrowMinVerticalAngle && newKickArrowEulerAngleX < GameManager.kickArrowMaxVerticalAngle) {
+      }
+      else if (verticalChange > 0)
+      {
+        if (newKickArrowEulerAngleX > GameManager.kickArrowMinVerticalAngle && newKickArrowEulerAngleX < GameManager.kickArrowMaxVerticalAngle)
+        {
           newKickArrowEulerAngleX = GameManager.kickArrowMinVerticalAngle;
         }
       }
 
       float newKickArrowEulerAngleY = currKickArrowEulerAngles.y + horizontalChange;
       // first condition value arbitrary, inserted to protect against arrow jump
-      if (Mathf.Abs(newKickArrowEulerAngleY) < 60 && newKickArrowEulerAngleY < 360 - GameManager.kickArrowMaxHorizontalAngle && newKickArrowEulerAngleY > GameManager.kickArrowMaxHorizontalAngle) {
+      if (Mathf.Abs(newKickArrowEulerAngleY) < 60 && newKickArrowEulerAngleY < 360 - GameManager.kickArrowMaxHorizontalAngle && newKickArrowEulerAngleY > GameManager.kickArrowMaxHorizontalAngle)
+      {
         newKickArrowEulerAngleY = GameManager.kickArrowMaxHorizontalAngle;
       }
       // first condition value arbitrary, inserted to protect against arrow jump
-      if (Mathf.Abs(newKickArrowEulerAngleY) > 300 && newKickArrowEulerAngleY < 360 - GameManager.kickArrowMaxHorizontalAngle && newKickArrowEulerAngleY > GameManager.kickArrowMaxHorizontalAngle) {
+      if (Mathf.Abs(newKickArrowEulerAngleY) > 300 && newKickArrowEulerAngleY < 360 - GameManager.kickArrowMaxHorizontalAngle && newKickArrowEulerAngleY > GameManager.kickArrowMaxHorizontalAngle)
+      {
         newKickArrowEulerAngleY = -GameManager.kickArrowMaxHorizontalAngle;
       }
 
       kickArrow.transform.localEulerAngles = new Vector3(newKickArrowEulerAngleX, newKickArrowEulerAngleY, currKickArrowEulerAngles.z);
     }
 
-    if (Input.GetKeyUp(GameManager.kickBallButton) || (GameManager.ballPlayerKickableDistance < Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+    if (Input.GetKeyUp(GameManager.kickBallButton) || (GameManager.ballPlayerKickableDistance < Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+    {
       // ball kick resolution
-      if (Input.GetKeyUp(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position))) {
+      if (Input.GetKeyUp(GameManager.kickBallButton) && (GameManager.ballPlayerKickableDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
+      {
         Rigidbody brb = GameManager.ball.GetComponent<Rigidbody>();
         float kickScale = kickArrow.transform.localScale.x;
         Vector3 kickDirection = kickArrow.transform.forward;
@@ -178,7 +197,7 @@ public class Player : MonoBehaviour
       }
 
       kickArrow.SetActive(false);
-      increaseKickArrowScale = true; 
+      increaseKickArrowScale = true;
     }
   }
 }

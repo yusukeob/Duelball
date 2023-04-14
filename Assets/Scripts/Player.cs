@@ -65,6 +65,14 @@ public class Player : MonoBehaviour
 
     animator.SetFloat("playerSpeed", playerSpeed);
 
+    // tackle action
+    bool tackle = false;
+    if (Input.GetKeyDown(GameManager.tackleButton)) {
+      tackle = true;
+    }
+
+    animator.SetBool("tackle", tackle);
+
     // ball interaction
     if (Input.GetKeyDown(GameManager.engageBallButton) && (hasBall || GameManager.ballPlayerPickupDistance >= Vector3.Distance(player.transform.position, GameManager.ball.transform.position)))
     {

@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
     private static GameObject mainCamera;
     private static GameObject player;
     public static GameObject ball;
+    public static GameObject audioControl;
+    private static AudioSource bgm001;
     private float cameraDistance = 15f;
 
     public static KeyCode forwardButton = KeyCode.UpArrow;
@@ -37,6 +39,9 @@ public class GameManager : MonoBehaviour
         mainCamera = GameObject.Find("Main Camera");
         player = GameObject.Find("Player");
         ball = GameObject.Find("Ball");
+        audioControl = GameObject.Find("Audio Control");
+        bgm001 = audioControl.GetComponent<AudioSource>();
+        bgm001.Play();
     }
 
     // Update is called once per frame
